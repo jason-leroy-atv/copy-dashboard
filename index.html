@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apple TV+ Copy Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #f0f0f0;
+      font-family: -apple-system, "SF Pro Display", "SF Pro Text", Helvetica, sans-serif;
+      min-height: 100vh;
+      padding: 40px 32px;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+      color: #fff;
+    }
+
+    .header-left p {
+      font-size: 14px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.4;
+    }
+
+    input[type="text"] {
+      background: #1c1c1e;
+      border: 1px solid #2e2e30;
+      border-radius: 10px;
+      color: #f0f0f0;
+      font-size: 14px;
+      padding: 9px 14px 9px 34px;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: #555; }
+    input[type="text"]:focus { border-color: #555; }
+
+    select {
+      background: #1c1c1e;
+      border: 1px solid #2e2e30;
+      border-radius: 10px;
+      color: #f0f0f0;
+      font-size: 14px;
+      padding: 9px 14px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 30px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { border-color: #555; }
+
+    .btn-add {
+      background: #ffffff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 9px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+
+    .btn-add:hover { background: #e0e0e0; }
+
+    /* ── Summary Cards ── */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: #161618;
+      border: 1px solid #2a2a2c;
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .card .label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 30px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .card .sub {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: #111113;
+      border: 1px solid #222224;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      background: #161618;
+      color: #666;
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid #222224;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    thead th:hover { color: #aaa; }
+
+    thead th .sort-icon {
+      display: inline-block;
+      margin-left: 5px;
+      opacity: 0.3;
+      font-size: 10px;
+    }
+
+    thead th.sorted .sort-icon { opacity: 1; color: #fff; }
+
+    tbody tr {
+      border-bottom: 1px solid #1c1c1e;
+      transition: background 0.12s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #1a1a1c; }
+
+    td {
+      padding: 15px 20px;
+      vertical-align: middle;
+      color: #d8d8d8;
+    }
+
+    /* Title cell */
+    .title-cell {
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .title-cell .type-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      color: #666;
+      background: #222;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-left: 8px;
+      vertical-align: middle;
+      letter-spacing: 0.3px;
+    }
+
+    /* Priority badge */
+    .priority {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .priority-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .priority.brand-defining    { background: rgba(255, 69, 58, 0.15); color: #ff6961; }
+    .priority.brand-defining .priority-dot { background: #ff6961; }
+
+    .priority.core              { background: rgba(255, 159, 10, 0.15); color: #ffa930; }
+    .priority.core .priority-dot { background: #ffa930; }
+
+    .priority.focused           { background: rgba(10, 132, 255, 0.15); color: #5aafff; }
+    .priority.focused .priority-dot { background: #5aafff; }
+
+    .priority.platform-building { background: rgba(48, 209, 88, 0.12); color: #4cd964; }
+    .priority.platform-building .priority-dot { background: #4cd964; }
+
+    /* Date cell */
+    .date-cell { color: #aaa; white-space: nowrap; }
+    .date-cell .upcoming { color: #ffa930; }
+    .date-cell .tbd { color: #555; font-style: italic; }
+
+    /* Person pill */
+    .person {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #444;
+    }
+
+    .empty-state svg { opacity: 0.3; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #1c1c1e;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+    }
+
+    .modal h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      background: #2c2c2e;
+      border: 1px solid #3a3a3c;
+      border-radius: 10px;
+      color: #f0f0f0;
+      font-size: 15px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background-image: none;
+    }
+
+    .form-group select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus { border-color: #666; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 28px;
+    }
+
+    .btn-cancel {
+      background: #2c2c2e;
+      color: #aaa;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 18px;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover { background: #3a3a3c; }
+
+    .btn-save {
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 22px;
+      cursor: pointer;
+    }
+
+    .btn-save:hover { background: #ddd; }
+
+    /* Row delete button */
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #444;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-delete:hover { color: #ff6961; background: rgba(255,105,97,0.1); }
+
+    @media (max-width: 700px) {
+      body { padding: 20px 16px; }
+      input[type="text"] { width: 160px; }
+      td, th { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Copy Dashboard</h1>
+    <p>Apple TV+ · Platform Copy &amp; Push</p>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="6" cy="6" r="4.5" stroke="#fff" stroke-width="1.4"/>
+        <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search titles…" oninput="renderTable()" />
+    </div>
+    <select id="priorityFilter" onchange="renderTable()">
+      <option value="">All Priorities</option>
+      <option value="Brand-Defining">Brand-Defining</option>
+      <option value="Core">Core</option>
+      <option value="Focused">Focused</option>
+      <option value="Platform-Building">Platform-Building</option>
+    </select>
+    <select id="leadFilter" onchange="renderTable()">
+      <option value="">All Copy Leads</option>
+    </select>
+    <button class="btn-add" onclick="openModal()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="#000" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="#000" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Add Title
+    </button>
+  </div>
+</header>
+
+<!-- Summary Cards -->
+<div class="summary">
+  <div class="card">
+    <div class="label">Total Titles</div>
+    <div class="value" id="statTotal">—</div>
+    <div class="sub">In tracker</div>
+  </div>
+  <div class="card">
+    <div class="label">Brand-Defining</div>
+    <div class="value" id="statHigh" style="color:#ff6961">—</div>
+    <div class="sub">Need attention</div>
+  </div>
+  <div class="card">
+    <div class="label">Premiering Soon</div>
+    <div class="value" id="statSoon" style="color:#ffa930">—</div>
+    <div class="sub">Within 60 days</div>
+  </div>
+  <div class="card">
+    <div class="label">Copy Leads</div>
+    <div class="value" id="statLeads">—</div>
+    <div class="sub">Unique leads</div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('title')">Title <span class="sort-icon" id="sort-title">↕</span></th>
+        <th onclick="sortBy('copyLead')">Copy Lead <span class="sort-icon" id="sort-copyLead">↕</span></th>
+        <th onclick="sortBy('premiereDate')">Premiere Date <span class="sort-icon" id="sort-premiereDate">↕</span></th>
+        <th onclick="sortBy('priority')">Priority <span class="sort-icon" id="sort-priority">↕</span></th>
+        <th onclick="sortBy('stratLead')">Platform Strategy Lead <span class="sort-icon" id="sort-stratLead">↕</span></th>
+        <th style="width:40px"></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- Add Title Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add Title</h2>
+    <div class="form-group">
+      <label>Title Name</label>
+      <input type="text" id="f-title" placeholder="e.g. The Morning Show S4" />
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select id="f-type">
+        <option value="Series">Series</option>
+        <option value="Film">Film</option>
+        <option value="Documentary">Documentary</option>
+        <option value="Special">Special</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Copy Lead</label>
+      <input type="text" id="f-copyLead" placeholder="e.g. Maya R." />
+    </div>
+    <div class="form-group">
+      <label>Premiere Date</label>
+      <input type="date" id="f-premiereDate" />
+    </div>
+    <div class="form-group">
+      <label>Priority</label>
+      <select id="f-priority">
+        <option value="Brand-Defining">Brand-Defining</option>
+        <option value="Core" selected>Core</option>
+        <option value="Focused">Focused</option>
+        <option value="Platform-Building">Platform-Building</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Platform Strategy Lead</label>
+      <input type="text" id="f-stratLead" placeholder="e.g. Jordan K." />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTitle()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Data ──────────────────────────────────────────────────────────
+  let titles = [
+    { id: 1, title: "The Morning Show", type: "Series", copyLead: "Maya R.", premiereDate: "2026-09-12", priority: "Brand-Defining", stratLead: "Jordan K." },
+    { id: 2, title: "Severance", type: "Series", copyLead: "Chris T.", premiereDate: "2026-07-18", priority: "Brand-Defining", stratLead: "Priya L." },
+    { id: 3, title: "Slow Horses", type: "Series", copyLead: "Sam W.", premiereDate: "2026-08-05", priority: "Core", stratLead: "Jordan K." },
+    { id: 4, title: "Shrinking", type: "Series", copyLead: "Maya R.", premiereDate: "2026-11-20", priority: "Core", stratLead: "Priya L." },
+    { id: 5, title: "Fly Me to the Moon", type: "Film", copyLead: "Alex D.", premiereDate: "", priority: "Platform-Building", stratLead: "Marcus B." },
+    { id: 6, title: "Presumed Innocent", type: "Series", copyLead: "Chris T.", premiereDate: "2026-07-02", priority: "Focused", stratLead: "Marcus B." },
+  ];
+
+  let nextId = 7;
+  let sortKey = "";
+  let sortDir = 1;
+  let editingId = null;
+
+  // Avatar color palette
+  const avatarColors = [
+    { bg: "rgba(94,92,230,0.25)", color: "#a78bfa" },
+    { bg: "rgba(255,159,10,0.2)", color: "#ffa930" },
+    { bg: "rgba(52,199,89,0.18)", color: "#4cd964" },
+    { bg: "rgba(255,69,58,0.18)", color: "#ff6961" },
+    { bg: "rgba(10,132,255,0.2)", color: "#5aafff" },
+    { bg: "rgba(255,55,95,0.18)", color: "#ff6e8a" },
+    { bg: "rgba(100,210,255,0.18)", color: "#64d2ff" },
+  ];
+
+  function colorFor(name) {
+    let hash = 0;
+    for (let c of name) hash = (hash * 31 + c.charCodeAt(0)) & 0xffff;
+    return avatarColors[hash % avatarColors.length];
+  }
+
+  function initials(name) {
+    return name.split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return `<span class="tbd">TBD</span>`;
+    const d = new Date(dateStr + "T00:00:00");
+    const now = new Date();
+    const diff = (d - now) / (1000 * 60 * 60 * 24);
+    const formatted = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    if (diff >= 0 && diff <= 180) return `<span class="upcoming">⬤ ${formatted}</span>`;
+    return formatted;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────
+  function renderTable() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const pFilter = document.getElementById("priorityFilter").value;
+    const lFilter = document.getElementById("leadFilter").value;
+
+    let data = titles.filter(t => {
+      const matchSearch = !search || t.title.toLowerCase().includes(search)
+        || t.copyLead.toLowerCase().includes(search)
+        || t.stratLead.toLowerCase().includes(search);
+      const matchP = !pFilter || t.priority === pFilter;
+      const matchL = !lFilter || t.copyLead === lFilter;
+      return matchSearch && matchP && matchL;
+    });
+
+    if (sortKey) {
+      data.sort((a, b) => {
+        let va = a[sortKey] || "", vb = b[sortKey] || "";
+        if (sortKey === "priority") {
+          const order = { "Brand-Defining": 0, Core: 1, Focused: 2, "Platform-Building": 3 };
+          return (order[va] - order[vb]) * sortDir;
+        }
+        return va.localeCompare(vb) * sortDir;
+      });
+    }
+
+    const tbody = document.getElementById("tableBody");
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#fff" stroke-width="1.5"/><line x1="10" y1="16" x2="22" y2="16" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <p>No titles match your filters.</p>
+      </div></td></tr>`;
+      updateStats(data);
+      return;
+    }
+
+    tbody.innerHTML = data.map(t => {
+      const cl = colorFor(t.copyLead);
+      const sl = colorFor(t.stratLead);
+      const pClass = t.priority.toLowerCase().replace(/\s+/g, "-");
+      return `<tr>
+        <td class="title-cell">${t.title}<span class="type-tag">${t.type}</span></td>
+        <td><div class="person">
+          <div class="avatar" style="background:${cl.bg};color:${cl.color}">${initials(t.copyLead)}</div>
+          ${t.copyLead}
+        </div></td>
+        <td class="date-cell">${formatDate(t.premiereDate)}</td>
+        <td><span class="priority ${pClass}"><span class="priority-dot"></span>${t.priority}</span></td>
+        <td><div class="person">
+          <div class="avatar" style="background:${sl.bg};color:${sl.color}">${initials(t.stratLead)}</div>
+          ${t.stratLead}
+        </div></td>
+        <td><button class="btn-delete" onclick="deleteTitle(${t.id})" title="Remove">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button></td>
+      </tr>`;
+    }).join("");
+
+    updateStats(titles);
+    updateLeadFilter();
+  }
+
+  function updateStats(filtered) {
+    const now = new Date();
+    const soon = titles.filter(t => {
+      if (!t.premiereDate) return false;
+      const d = new Date(t.premiereDate + "T00:00:00");
+      const diff = (d - now) / (1000*60*60*24);
+      return diff >= 0 && diff <= 60;
+    });
+    document.getElementById("statTotal").textContent = titles.length;
+    document.getElementById("statHigh").textContent = titles.filter(t => t.priority === "Brand-Defining").length;
+    document.getElementById("statSoon").textContent = soon.length;
+    const uniqueLeads = new Set(titles.map(t => t.copyLead));
+    document.getElementById("statLeads").textContent = uniqueLeads.size;
+  }
+
+  function updateLeadFilter() {
+    const sel = document.getElementById("leadFilter");
+    const current = sel.value;
+    const leads = [...new Set(titles.map(t => t.copyLead))].sort();
+    sel.innerHTML = `<option value="">All Copy Leads</option>` +
+      leads.map(l => `<option value="${l}" ${l === current ? "selected" : ""}>${l}</option>`).join("");
+  }
+
+  // ── Sort ──────────────────────────────────────────────────────────
+  function sortBy(key) {
+    if (sortKey === key) sortDir *= -1;
+    else { sortKey = key; sortDir = 1; }
+    document.querySelectorAll(".sort-icon").forEach(el => {
+      el.textContent = "↕"; el.style.opacity = "0.3"; el.style.color = "";
+    });
+    const icon = document.getElementById("sort-" + key);
+    if (icon) { icon.textContent = sortDir === 1 ? "↑" : "↓"; icon.style.opacity = "1"; icon.style.color = "#fff"; }
+    document.querySelectorAll("thead th").forEach(th => th.classList.remove("sorted"));
+    renderTable();
+  }
+
+  // ── Modal ─────────────────────────────────────────────────────────
+  function openModal(id = null) {
+    editingId = id;
+    document.getElementById("modalTitle").textContent = id ? "Edit Title" : "Add Title";
+    if (id) {
+      const t = titles.find(x => x.id === id);
+      document.getElementById("f-title").value = t.title;
+      document.getElementById("f-type").value = t.type;
+      document.getElementById("f-copyLead").value = t.copyLead;
+      document.getElementById("f-premiereDate").value = t.premiereDate;
+      document.getElementById("f-priority").value = t.priority;
+      document.getElementById("f-stratLead").value = t.stratLead;
+    } else {
+      ["f-title","f-copyLead","f-stratLead","f-premiereDate"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("f-priority").value = "Core";
+      document.getElementById("f-type").value = "Series";
+    }
+    document.getElementById("modalOverlay").classList.add("active");
+    setTimeout(() => document.getElementById("f-title").focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById("modalOverlay").classList.remove("active");
+  }
+
+  function saveTitle() {
+    const title = document.getElementById("f-title").value.trim();
+    const copyLead = document.getElementById("f-copyLead").value.trim();
+    const stratLead = document.getElementById("f-stratLead").value.trim();
+    if (!title || !copyLead || !stratLead) { alert("Please fill in Title, Copy Lead, and Strategy Lead."); return; }
+
+    const entry = {
+      id: editingId || nextId++,
+      title,
+      type: document.getElementById("f-type").value,
+      copyLead,
+      premiereDate: document.getElementById("f-premiereDate").value,
+      priority: document.getElementById("f-priority").value,
+      stratLead,
+    };
+
+    if (editingId) {
+      const idx = titles.findIndex(t => t.id === editingId);
+      titles[idx] = entry;
+    } else {
+      titles.push(entry);
+    }
+
+    closeModal();
+    renderTable();
+  }
+
+  function deleteTitle(id) {
+    titles = titles.filter(t => t.id !== id);
+    renderTable();
+  }
+
+  // Close on backdrop click
+  document.getElementById("modalOverlay").addEventListener("click", e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // Keyboard shortcut
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────
+  renderTable();
+</script>
+</body>
+</html>
